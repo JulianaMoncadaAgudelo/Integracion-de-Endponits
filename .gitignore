@@ -48,3 +48,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Archivos específicos a excluir
+entregable1.docx
+GITHUB.md
+github.md
