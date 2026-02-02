@@ -31,11 +31,17 @@ Este proyecto incluye dos versiones:
 - ✅ Asignación por nombre de miembro del equipo (string)
 - ✅ Dashboard con estadísticas
 - ✅ Interfaz web moderna y responsive
+- ✅ **NUEVO:** Integración con IA usando Ollama
+  - Generación automática de descripciones
+  - Clasificación automática de categorías
+  - Estimación de esfuerzo con IA
+  - Análisis de riesgos y planes de mitigación
 
 ## Requisitos
 
 - Python 3.8 o superior
 - pip (gestor de paquetes de Python)
+- **Ollama** (para los endpoints de IA) - Ver `SETUP_OLLAMA.md` para instrucciones de instalación
 
 ## Instalación
 
@@ -46,6 +52,20 @@ Este proyecto incluye dos versiones:
 ```bash
 pip install -r requirements.txt
 ```
+
+3. **Instalar y configurar Ollama** (requerido para endpoints de IA):
+   - Ver `SETUP_OLLAMA.md` para instrucciones detalladas
+   - Resumen rápido:
+     ```bash
+     # Descargar e instalar Ollama desde https://ollama.ai
+     # Descargar un modelo (ejemplo):
+     ollama pull llama3.2
+     ```
+
+4. **Migrar la base de datos** (si ya tienes una base de datos existente):
+   ```bash
+   python migrate_db.py
+   ```
 
 ## Configuración
 
@@ -155,6 +175,9 @@ python app.py
 - `effort_hours`: Número decimal, horas estimadas para completar la tarea
 - `status`: Estado - Pendiente, En Progreso, En Revisión, Completada
 - `assigned_to`: String, persona del equipo a la que se asigna
+- `category`: Categoría de la tarea (Frontend, Backend, Testing, Infra, etc.) - **NUEVO**
+- `risk_analysis`: Análisis de riesgos de la tarea - **NUEVO**
+- `risk_mitigation`: Plan de mitigación de riesgos - **NUEVO**
 - `creador_id`: Usuario que creó la tarea
 - `fecha_creacion`: Fecha de creación
 
@@ -330,13 +353,84 @@ curl -X DELETE http://localhost:5000/tasks/1 \
   -H "Cookie: session=<tu-sesion>"
 ```
 
+## Endpoints de IA con Ollama
+
+El proyecto incluye endpoints de IA que utilizan Ollama para generar contenido automáticamente. **Ver `ENDPOINTS_IA.md` para documentación completa.**
+
+### Endpoints Disponibles
+
+#### 1. POST /ai/tasks/describe
+Genera una descripción detallada para una tarea basándose en su título.
+
+```bash
+curl -X POST http://localhost:5000/ai/tasks/describe \
+  -H "Content-Type: application/json" \
+  -H "Cookie: session=<tu-sesion>" \
+  -d '{
+    "title": "Implementar autenticación JWT",
+    "priority": "alta"
+  }'
+```
+
+#### 2. POST /ai/tasks/categorize
+Clasifica una tarea en una categoría (Frontend, Backend, Testing, etc.).
+
+```bash
+curl -X POST http://localhost:5000/ai/tasks/categorize \
+  -H "Content-Type: application/json" \
+  -H "Cookie: session=<tu-sesion>" \
+  -d '{
+    "title": "Crear componente de login",
+    "description": "Implementar formulario de login"
+  }'
+```
+
+#### 3. POST /ai/tasks/estimate
+Estima el esfuerzo en horas necesario para completar una tarea.
+
+```bash
+curl -X POST http://localhost:5000/ai/tasks/estimate \
+  -H "Content-Type: application/json" \
+  -H "Cookie: session=<tu-sesion>" \
+  -d '{
+    "title": "Implementar sistema de notificaciones",
+    "description": "Crear sistema de notificaciones push",
+    "category": "Backend"
+  }'
+```
+
+#### 4. POST /ai/tasks/audit
+Realiza un análisis de riesgos y genera un plan de mitigación.
+
+```bash
+curl -X POST http://localhost:5000/ai/tasks/audit \
+  -H "Content-Type: application/json" \
+  -H "Cookie: session=<tu-sesion>" \
+  -d '{
+    "title": "Migrar base de datos a PostgreSQL",
+    "description": "Migrar datos de SQLite a PostgreSQL",
+    "category": "Database",
+    "priority": "alta",
+    "effort_hours": 16.0
+  }'
+```
+
+### Requisitos para Endpoints de IA
+
+- Ollama debe estar instalado y corriendo (ver `SETUP_OLLAMA.md`)
+- Un modelo debe estar descargado (ej: `ollama pull llama3.2`)
+- La API de Ollama debe estar disponible en `http://localhost:11434`
+
 ## Notas
 
 - La base de datos SQLite se crea automáticamente al ejecutar la aplicación por primera vez
+- Si ya tienes una base de datos, ejecuta `python migrate_db.py` para agregar los nuevos campos
 - En producción, cambia la `SECRET_KEY` en `app.py`
 - Considera usar PostgreSQL o MySQL para producción
 - El primer usuario registrado será automáticamente administrador
 - Los endpoints API requieren autenticación mediante sesión de Flask-Login
+- Los endpoints de IA requieren que Ollama esté corriendo (ver `SETUP_OLLAMA.md`)
+- Para más información sobre los endpoints de IA, consulta `ENDPOINTS_IA.md`
 
 ## Licencia
 

@@ -4,9 +4,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
-venv/
-ENV/
 build/
 develop-eggs/
 dist/
@@ -23,17 +20,22 @@ wheels/
 .installed.cfg
 *.egg
 
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
 # Flask
 instance/
 .webassets-cache
 
-# Base de datos
+# Database
 *.db
 *.sqlite
 *.sqlite3
-
-# Archivo JSON de tareas (opcional - descomenta si no quieres versionarlo)
-# tasks.json
+tareas.db
 
 # IDE
 .vscode/
@@ -45,11 +47,15 @@ instance/
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Logs
 *.log
 
-# Archivos específicos a excluir
-entregable1.docx
-GITHUB.md
-github.md
+# Environment variables
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.temp

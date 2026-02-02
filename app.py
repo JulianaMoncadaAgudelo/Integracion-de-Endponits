@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from decimal import Decimal
 import os
+from services.ai_service import AIService
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'tu-clave-secreta-aqui-cambiar-en-produccion'
@@ -16,6 +17,10 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Por favor, inicia sesión para acceder a esta página.'
+
+# Inicializar servicio de IA
+# Usar el modelo disponible (gemma3:1b) o cambiar a llama3.2 si está disponible
+ai_service = AIService(model="gemma3:1b")
 
 # Modelos
 class Usuario(UserMixin, db.Model):
@@ -40,6 +45,9 @@ class Tarea(db.Model):
     effort_hours = db.Column(db.Numeric(10, 2), nullable=True)  # número decimal
     status = db.Column(db.String(20), default='pendiente')  # pendiente, en_progreso, en_revision, completada
     assigned_to = db.Column(db.String(100), nullable=True)  # string, persona del equipo
+    category = db.Column(db.String(50), nullable=True)  # Frontend, Backend, Testing, Infra, etc.
+    risk_analysis = db.Column(db.Text, nullable=True)  # Análisis de riesgos
+    risk_mitigation = db.Column(db.Text, nullable=True)  # Plan de mitigación de riesgos
     creador_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -145,6 +153,10 @@ def nueva_tarea():
         status = request.form.get('status', 'pendiente')
         assigned_to = request.form.get('assigned_to', '').strip()
         
+        category = request.form.get('category', '').strip()
+        risk_analysis = request.form.get('risk_analysis', '').strip()
+        risk_mitigation = request.form.get('risk_mitigation', '').strip()
+        
         tarea = Tarea(
             title=title,
             description=description,
@@ -152,6 +164,9 @@ def nueva_tarea():
             effort_hours=Decimal(effort_hours) if effort_hours else None,
             status=status,
             assigned_to=assigned_to if assigned_to else None,
+            category=category if category else None,
+            risk_analysis=risk_analysis if risk_analysis else None,
+            risk_mitigation=risk_mitigation if risk_mitigation else None,
             creador_id=current_user.id
         )
         
@@ -183,6 +198,12 @@ def editar_tarea(tarea_id):
         tarea.status = request.form.get('status', 'pendiente')
         assigned_to = request.form.get('assigned_to', '').strip()
         tarea.assigned_to = assigned_to if assigned_to else None
+        category = request.form.get('category', '').strip()
+        tarea.category = category if category else None
+        risk_analysis = request.form.get('risk_analysis', '').strip()
+        tarea.risk_analysis = risk_analysis if risk_analysis else None
+        risk_mitigation = request.form.get('risk_mitigation', '').strip()
+        tarea.risk_mitigation = risk_mitigation if risk_mitigation else None
         
         db.session.commit()
         flash('Tarea actualizada exitosamente', 'success')
@@ -276,6 +297,9 @@ def create_task():
             effort_hours=Decimal(str(data.get('effort_hours'))) if data.get('effort_hours') else None,
             status=data.get('status', 'pendiente'),
             assigned_to=data.get('assigned_to'),
+            category=data.get('category'),
+            risk_analysis=data.get('risk_analysis'),
+            risk_mitigation=data.get('risk_mitigation'),
             creador_id=current_user.id
         )
         
@@ -298,6 +322,9 @@ def create_task():
             'effort_hours': float(tarea.effort_hours) if tarea.effort_hours else None,
             'status': tarea.status,
             'assigned_to': tarea.assigned_to,
+            'category': tarea.category,
+            'risk_analysis': tarea.risk_analysis,
+            'risk_mitigation': tarea.risk_mitigation,
             'fecha_creacion': tarea.fecha_creacion.isoformat()
         }), 201
         
@@ -328,6 +355,9 @@ def get_all_tasks():
                 'effort_hours': float(tarea.effort_hours) if tarea.effort_hours else None,
                 'status': tarea.status,
                 'assigned_to': tarea.assigned_to,
+                'category': tarea.category,
+                'risk_analysis': tarea.risk_analysis,
+                'risk_mitigation': tarea.risk_mitigation,
                 'fecha_creacion': tarea.fecha_creacion.isoformat()
             })
         
@@ -358,6 +388,9 @@ def get_task(task_id):
             'effort_hours': float(tarea.effort_hours) if tarea.effort_hours else None,
             'status': tarea.status,
             'assigned_to': tarea.assigned_to,
+            'category': tarea.category,
+            'risk_analysis': tarea.risk_analysis,
+            'risk_mitigation': tarea.risk_mitigation,
             'fecha_creacion': tarea.fecha_creacion.isoformat()
         }), 200
         
@@ -403,6 +436,15 @@ def update_task(task_id):
         if 'assigned_to' in data:
             tarea.assigned_to = data['assigned_to'] if data['assigned_to'] else None
         
+        if 'category' in data:
+            tarea.category = data['category'] if data['category'] else None
+        
+        if 'risk_analysis' in data:
+            tarea.risk_analysis = data['risk_analysis'] if data['risk_analysis'] else None
+        
+        if 'risk_mitigation' in data:
+            tarea.risk_mitigation = data['risk_mitigation'] if data['risk_mitigation'] else None
+        
         db.session.commit()
         
         return jsonify({
@@ -413,6 +455,9 @@ def update_task(task_id):
             'effort_hours': float(tarea.effort_hours) if tarea.effort_hours else None,
             'status': tarea.status,
             'assigned_to': tarea.assigned_to,
+            'category': tarea.category,
+            'risk_analysis': tarea.risk_analysis,
+            'risk_mitigation': tarea.risk_mitigation,
             'fecha_creacion': tarea.fecha_creacion.isoformat()
         }), 200
         
@@ -441,6 +486,156 @@ def delete_task(task_id):
         
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# Endpoints de IA
+@app.route('/ai/tasks/describe', methods=['POST'])
+@login_required
+def ai_describe_task():
+    """
+    Genera una descripción para una tarea usando IA.
+    Recibe una tarea con description vacía y genera su description con LLM.
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('title'):
+            return jsonify({'error': 'El campo title es requerido'}), 400
+        
+        title = data.get('title')
+        priority = data.get('priority')
+        assigned_to = data.get('assigned_to')
+        
+        # Generar descripción usando IA
+        description = ai_service.generate_description(
+            title=title,
+            priority=priority,
+            assigned_to=assigned_to
+        )
+        
+        # Devolver la tarea con la descripción generada
+        result = {
+            'title': title,
+            'description': description,
+            'priority': priority,
+            'assigned_to': assigned_to
+        }
+        
+        return jsonify(result), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/ai/tasks/categorize', methods=['POST'])
+@login_required
+def ai_categorize_task():
+    """
+    Clasifica una tarea en una categoría usando IA.
+    Recibe una tarea sin categoría y la clasifica con LLM.
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('title'):
+            return jsonify({'error': 'El campo title es requerido'}), 400
+        
+        title = data.get('title')
+        description = data.get('description')
+        
+        # Categorizar usando IA
+        category = ai_service.categorize_task(
+            title=title,
+            description=description
+        )
+        
+        # Devolver la tarea con la categoría generada
+        result = data.copy()
+        result['category'] = category
+        
+        return jsonify(result), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/ai/tasks/estimate', methods=['POST'])
+@login_required
+def ai_estimate_task():
+    """
+    Estima el esfuerzo en horas para una tarea usando IA.
+    Recibe una tarea sin effort_hours y estima su esfuerzo con LLM.
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('title'):
+            return jsonify({'error': 'El campo title es requerido'}), 400
+        
+        title = data.get('title')
+        description = data.get('description')
+        category = data.get('category')
+        
+        # Estimar esfuerzo usando IA
+        effort_hours = ai_service.estimate_effort(
+            title=title,
+            description=description,
+            category=category
+        )
+        
+        # Devolver la tarea con el esfuerzo estimado
+        result = data.copy()
+        result['effort_hours'] = effort_hours
+        
+        return jsonify(result), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/ai/tasks/audit', methods=['POST'])
+@login_required
+def ai_audit_task():
+    """
+    Realiza un análisis de riesgos y genera un plan de mitigación usando IA.
+    Recibe una tarea y genera risk_analysis y risk_mitigation con LLM.
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('title'):
+            return jsonify({'error': 'El campo title es requerido'}), 400
+        
+        title = data.get('title')
+        description = data.get('description')
+        category = data.get('category')
+        priority = data.get('priority')
+        effort_hours = data.get('effort_hours')
+        
+        # Primera petición: Análisis de riesgos
+        risk_analysis = ai_service.analyze_risks(
+            title=title,
+            description=description,
+            category=category,
+            priority=priority,
+            effort_hours=effort_hours
+        )
+        
+        # Segunda petición: Plan de mitigación (usando el análisis de riesgos)
+        risk_mitigation = ai_service.generate_mitigation_plan(
+            title=title,
+            description=description,
+            category=category,
+            priority=priority,
+            effort_hours=effort_hours,
+            risk_analysis=risk_analysis
+        )
+        
+        # Devolver la tarea con el análisis y plan de mitigación
+        result = data.copy()
+        result['risk_analysis'] = risk_analysis
+        result['risk_mitigation'] = risk_mitigation
+        
+        return jsonify(result), 200
+        
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 # Inicializar base de datos
