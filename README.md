@@ -1,437 +1,351 @@
-# Sistema de Gestión de Tareas con Flask
+# Task Management System with AI Integration
 
-Sistema completo de gestión de tareas que permite crear, asignar y gestionar tareas entre usuarios.
+A full-stack web application for task management with AI-powered features built using Flask, SQLAlchemy, and Ollama. The system provides comprehensive task tracking capabilities enhanced with artificial intelligence for automatic task description generation, categorization, effort estimation, and risk analysis.
 
-## 📋 Versiones del Proyecto
+## Overview
 
-Este proyecto incluye dos versiones:
+This project demonstrates proficiency in full-stack web development, RESTful API design, database modeling, user authentication, and AI integration. Built as a comprehensive task management solution, it showcases modern software engineering practices including secure authentication, role-based access control, and clean separation of concerns.
 
-### 1. Versión Simplificada (API REST con JSON)
+## Key Features
 
-- **Archivo:** `app_simple.py`
-- **Almacenamiento:** Archivo JSON (`tasks.json`)
-- **Estructura:** Clases Task y TaskManager
-- **Ver:** `README_ESTRUCTURA.md` para detalles de cumplimiento de requisitos
+### Core Functionality
+- User authentication and authorization with secure password hashing
+- Role-based access control (Admin and Standard User roles)
+- Full CRUD operations for tasks and users
+- Task assignment and tracking with multiple status levels
+- Responsive web interface with real-time status updates
+- Dashboard with task statistics and analytics
 
-### 2. Versión Completa (Con Interfaz Web)
+### Task Management
+- Priority levels: Low, Medium, High, Blocking
+- Status tracking: Pending, In Progress, In Review, Completed
+- Effort estimation in decimal hours
+- Task categorization (Frontend, Backend, Testing, Infrastructure, etc.)
+- Risk analysis and mitigation planning
+- Team member assignment
 
-- **Archivo:** `app.py`
-- **Almacenamiento:** Base de datos SQLite
-- **Características:** Interfaz web, autenticación, usuarios, dashboard
+### AI-Powered Features
+- Automatic task description generation based on title
+- Intelligent task categorization
+- AI-driven effort estimation
+- Risk analysis with mitigation plan generation
+- Integration with Ollama for local LLM inference
 
-## Características
+### API
+- RESTful API with JSON responses
+- Session-based authentication
+- Comprehensive error handling
+- Permission-based access control
 
-- ✅ Autenticación de usuarios (registro e inicio de sesión)
-- ✅ Gestión de usuarios (solo administradores)
-- ✅ Creación, edición y eliminación de tareas
-- ✅ Asignación de tareas a usuarios
-- ✅ Estados de tareas: Pendiente, En Progreso, En Revisión, Completada
-- ✅ Prioridades: Baja, Media, Alta, Bloqueante
-- ✅ Horas estimadas (effort_hours) - número decimal
-- ✅ Asignación por nombre de miembro del equipo (string)
-- ✅ Dashboard con estadísticas
-- ✅ Interfaz web moderna y responsive
-- ✅ **NUEVO:** Integración con IA usando Ollama
-  - Generación automática de descripciones
-  - Clasificación automática de categorías
-  - Estimación de esfuerzo con IA
-  - Análisis de riesgos y planes de mitigación
+## Tech Stack
 
-## Requisitos
+### Backend
+- **Framework:** Flask 3.0.0
+- **ORM:** SQLAlchemy 3.1.1
+- **Authentication:** Flask-Login 0.6.3
+- **Database:** SQLite (development), PostgreSQL-ready for production
+- **Password Security:** Werkzeug 3.0.1 (bcrypt hashing)
 
-- Python 3.8 o superior
-- pip (gestor de paquetes de Python)
-- **Ollama** (para los endpoints de IA) - Ver `SETUP_OLLAMA.md` para instrucciones de instalación
+### Frontend
+- **Template Engine:** Jinja2
+- **Styling:** Custom CSS with responsive design
+- **JavaScript:** Vanilla JS for dynamic interactions
 
-## Instalación
+### AI Integration
+- **LLM Platform:** Ollama
+- **Models:** Compatible with Llama, Gemma, and other Ollama-supported models
+- **API Integration:** REST API communication with local Ollama instance
 
-1. **Clonar o descargar el proyecto**
+### Additional Technologies
+- **HTTP Client:** Requests 2.31.0
+- **Database Migrations:** Custom migration scripts
+- **Version Control:** Git
 
-2. **Instalar las dependencias:**
+## Installation
+
+### Prerequisites
+- Python 3.8 or higher
+- pip (Python package manager)
+- Ollama (for AI features)
+
+### Setup Instructions
+
+1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd Integracion-de-Endponits
+```
+
+2. Install Python dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Instalar y configurar Ollama** (requerido para endpoints de IA):
-   - Ver `SETUP_OLLAMA.md` para instrucciones detalladas
-   - Resumen rápido:
-     ```bash
-     # Descargar e instalar Ollama desde https://ollama.ai
-     # Descargar un modelo (ejemplo):
-     ollama pull llama3.2
-     ```
+3. Install and configure Ollama (optional, required for AI features)
 
-4. **Migrar la base de datos** (si ya tienes una base de datos existente):
-   ```bash
-   python migrate_db.py
-   ```
+```bash
+# Visit https://ollama.ai to download and install Ollama
+# Then pull a model:
+ollama pull llama3.2
+```
 
-## Configuración
-
-1. **Ejecutar la aplicación:**
+4. Initialize the database
 
 ```bash
 python app.py
 ```
 
-2. **Acceder a la aplicación:**
-   - Abre tu navegador en: `http://localhost:5000`
-   - El primer usuario registrado será automáticamente administrador
+The database will be created automatically on first run.
 
-## Uso
+## Running the Application
 
-### Registro e Inicio de Sesión
-
-1. **Registro:**
-
-   - Ve a la página de registro
-   - Completa el formulario con tu nombre, email y contraseña
-   - El primer usuario será administrador automáticamente
-
-2. **Inicio de Sesión:**
-   - Usa tu email y contraseña para iniciar sesión
-
-### Gestión de Tareas
-
-1. **Crear Tarea:**
-
-   - Haz clic en "Nueva Tarea" en el menú
-   - Completa el formulario:
-     - **title** (Título) - requerido
-     - **description** (Descripción) - texto largo opcional
-     - **priority** (Prioridad) - Baja, Media, Alta, Bloqueante
-     - **effort_hours** (Horas Estimadas) - número decimal opcional
-     - **status** (Estado) - Pendiente, En Progreso, En Revisión, Completada
-     - **assigned_to** (Asignar a) - nombre del miembro del equipo (string)
-
-2. **Editar Tarea:**
-
-   - Haz clic en el icono de editar en cualquier tarea
-   - Modifica los campos necesarios
-   - Guarda los cambios
-
-3. **Cambiar Estado:**
-
-   - Usa el selector de estado en cada tarjeta de tarea
-   - Los estados disponibles son: Pendiente, En Progreso, En Revisión, Completada
-
-4. **Eliminar Tarea:**
-   - Haz clic en el icono de eliminar
-   - Confirma la eliminación
-
-### Gestión de Usuarios (Solo Administradores)
-
-1. **Ver Usuarios:**
-
-   - Accede al menú "Usuarios"
-   - Verás una lista de todos los usuarios registrados
-
-2. **Crear Usuario:**
-   - Haz clic en "Nuevo Usuario"
-   - Completa el formulario
-   - Marca la casilla "Administrador" si deseas dar permisos de admin
-
-## Estructura del Proyecto
-
-```
-.
-├── app.py                 # Aplicación Flask principal
-├── requirements.txt       # Dependencias del proyecto
-├── tareas.db             # Base de datos SQLite (se crea automáticamente)
-├── templates/            # Plantillas HTML
-│   ├── base.html
-│   ├── login.html
-│   ├── register.html
-│   ├── dashboard.html
-│   ├── nueva_tarea.html
-│   ├── editar_tarea.html
-│   ├── usuarios.html
-│   └── nuevo_usuario.html
-└── static/               # Archivos estáticos
-    ├── css/
-    │   └── style.css
-    └── js/
-        └── main.js
-```
-
-## Modelos de Datos
-
-### Usuario
-
-- `id`: Identificador único
-- `nombre`: Nombre del usuario
-- `email`: Email único
-- `password_hash`: Contraseña encriptada
-- `es_admin`: Si es administrador
-- `fecha_creacion`: Fecha de registro
-
-### Tarea (Task)
-
-- `id`: Identificador único (primary key)
-- `title`: Título de la tarea
-- `description`: Texto largo que describe completamente la tarea
-- `priority`: Prioridad - Baja, Media, Alta, Bloqueante
-- `effort_hours`: Número decimal, horas estimadas para completar la tarea
-- `status`: Estado - Pendiente, En Progreso, En Revisión, Completada
-- `assigned_to`: String, persona del equipo a la que se asigna
-- `category`: Categoría de la tarea (Frontend, Backend, Testing, Infra, etc.) - **NUEVO**
-- `risk_analysis`: Análisis de riesgos de la tarea - **NUEVO**
-- `risk_mitigation`: Plan de mitigación de riesgos - **NUEVO**
-- `creador_id`: Usuario que creó la tarea
-- `fecha_creacion`: Fecha de creación
-
-## Seguridad
-
-- Las contraseñas se almacenan con hash usando Werkzeug
-- Autenticación basada en sesiones con Flask-Login
-- Protección CSRF (incluida en Flask)
-- Validación de permisos para acciones administrativas
-
-## API REST Endpoints
-
-La aplicación incluye endpoints REST API para la gestión de tareas. Todos los endpoints requieren autenticación (login).
-
-### Endpoints Disponibles
-
-#### 1. Crear una tarea
-
-**POST** `/tasks`
-
-**Body (JSON):**
-
-```json
-{
-  "title": "Título de la tarea",
-  "description": "Descripción detallada",
-  "priority": "media",
-  "effort_hours": 8.5,
-  "status": "pendiente",
-  "assigned_to": "Nombre del miembro del equipo"
-}
-```
-
-**Respuesta (201):**
-
-```json
-{
-  "id": 1,
-  "title": "Título de la tarea",
-  "description": "Descripción detallada",
-  "priority": "media",
-  "effort_hours": 8.5,
-  "status": "pendiente",
-  "assigned_to": "Nombre del miembro del equipo",
-  "fecha_creacion": "2024-01-01T12:00:00"
-}
-```
-
-#### 2. Leer todas las tareas
-
-**GET** `/tasks`
-
-**Respuesta (200):**
-
-```json
-{
-  "total": 2,
-  "tasks": [
-    {
-      "id": 1,
-      "title": "Tarea 1",
-      "description": "Descripción",
-      "priority": "media",
-      "effort_hours": 8.5,
-      "status": "pendiente",
-      "assigned_to": "Usuario",
-      "fecha_creacion": "2024-01-01T12:00:00"
-    }
-  ]
-}
-```
-
-**Nota:** Los administradores ven todas las tareas. Los usuarios regulares solo ven las tareas asignadas a ellos.
-
-#### 3. Leer una tarea específica
-
-**GET** `/tasks/<id>`
-
-**Respuesta (200):**
-
-```json
-{
-  "id": 1,
-  "title": "Título de la tarea",
-  "description": "Descripción detallada",
-  "priority": "media",
-  "effort_hours": 8.5,
-  "status": "pendiente",
-  "assigned_to": "Nombre del miembro del equipo",
-  "fecha_creacion": "2024-01-01T12:00:00"
-}
-```
-
-#### 4. Actualizar una tarea
-
-**PUT** `/tasks/<id>`
-
-**Body (JSON) - Campos opcionales:**
-
-```json
-{
-  "title": "Nuevo título",
-  "description": "Nueva descripción",
-  "priority": "alta",
-  "effort_hours": 10.0,
-  "status": "en_progreso",
-  "assigned_to": "Nuevo miembro"
-}
-```
-
-**Respuesta (200):** Devuelve la tarea actualizada en el mismo formato que GET.
-
-#### 5. Eliminar una tarea
-
-**DELETE** `/tasks/<id>`
-
-**Respuesta (200):**
-
-```json
-{
-  "message": "Tarea eliminada exitosamente",
-  "id": 1
-}
-```
-
-### Valores Válidos
-
-- **priority:** `baja`, `media`, `alta`, `bloqueante`
-- **status:** `pendiente`, `en_progreso`, `en_revision`, `completada`
-- **effort_hours:** Número decimal (ej: 8.5, 10.0)
-- **assigned_to:** String con el nombre del miembro del equipo (opcional)
-
-### Permisos
-
-- **Crear tarea:** Cualquier usuario autenticado
-- **Ver tareas:** Administradores ven todas, usuarios solo las asignadas a ellos
-- **Actualizar/Eliminar:** Solo administradores o el creador de la tarea
-
-### Ejemplo de Uso con cURL
+Start the Flask development server:
 
 ```bash
-# Crear una tarea
-curl -X POST http://localhost:5000/tasks \
-  -H "Content-Type: application/json" \
-  -H "Cookie: session=<tu-sesion>" \
-  -d '{
-    "title": "Nueva tarea",
-    "description": "Descripción",
-    "priority": "alta",
-    "effort_hours": 5.0,
-    "status": "pendiente",
-    "assigned_to": "Juan"
-  }'
-
-# Obtener todas las tareas
-curl -X GET http://localhost:5000/tasks \
-  -H "Cookie: session=<tu-sesion>"
-
-# Obtener una tarea específica
-curl -X GET http://localhost:5000/tasks/1 \
-  -H "Cookie: session=<tu-sesion>"
-
-# Actualizar una tarea
-curl -X PUT http://localhost:5000/tasks/1 \
-  -H "Content-Type: application/json" \
-  -H "Cookie: session=<tu-sesion>" \
-  -d '{
-    "status": "completada"
-  }'
-
-# Eliminar una tarea
-curl -X DELETE http://localhost:5000/tasks/1 \
-  -H "Cookie: session=<tu-sesion>"
+python app.py
 ```
 
-## Endpoints de IA con Ollama
+The application will be available at `http://localhost:5000`
 
-El proyecto incluye endpoints de IA que utilizan Ollama para generar contenido automáticamente. **Ver `ENDPOINTS_IA.md` para documentación completa.**
+### First-Time Setup
+- Navigate to the registration page
+- Create your account (first user becomes admin automatically)
+- Log in with your credentials
 
-### Endpoints Disponibles
+## Usage Examples
 
-#### 1. POST /ai/tasks/describe
-Genera una descripción detallada para una tarea basándose en su título.
+### Web Interface
+
+#### Creating a Task
+1. Log in to the dashboard
+2. Click "New Task"
+3. Fill in the task details:
+   - Title (required)
+   - Description
+   - Priority level
+   - Estimated effort in hours
+   - Status
+   - Team member assignment
+4. Submit to create the task
+
+#### Using AI Features
+The AI endpoints can be accessed via the REST API to enhance task creation:
 
 ```bash
+# Generate task description
 curl -X POST http://localhost:5000/ai/tasks/describe \
   -H "Content-Type: application/json" \
-  -H "Cookie: session=<tu-sesion>" \
+  -H "Cookie: session=YOUR_SESSION" \
   -d '{
-    "title": "Implementar autenticación JWT",
-    "priority": "alta"
+    "title": "Implement user authentication",
+    "priority": "high"
   }'
-```
 
-#### 2. POST /ai/tasks/categorize
-Clasifica una tarea en una categoría (Frontend, Backend, Testing, etc.).
-
-```bash
+# Categorize task
 curl -X POST http://localhost:5000/ai/tasks/categorize \
   -H "Content-Type: application/json" \
-  -H "Cookie: session=<tu-sesion>" \
+  -H "Cookie: session=YOUR_SESSION" \
   -d '{
-    "title": "Crear componente de login",
-    "description": "Implementar formulario de login"
+    "title": "Create login component",
+    "description": "Build login form with validation"
   }'
-```
 
-#### 3. POST /ai/tasks/estimate
-Estima el esfuerzo en horas necesario para completar una tarea.
-
-```bash
+# Estimate effort
 curl -X POST http://localhost:5000/ai/tasks/estimate \
   -H "Content-Type: application/json" \
-  -H "Cookie: session=<tu-sesion>" \
+  -H "Cookie: session=YOUR_SESSION" \
   -d '{
-    "title": "Implementar sistema de notificaciones",
-    "description": "Crear sistema de notificaciones push",
+    "title": "Implement notification system",
+    "description": "Build push notification service",
     "category": "Backend"
   }'
-```
 
-#### 4. POST /ai/tasks/audit
-Realiza un análisis de riesgos y genera un plan de mitigación.
-
-```bash
+# Risk analysis and mitigation
 curl -X POST http://localhost:5000/ai/tasks/audit \
   -H "Content-Type: application/json" \
-  -H "Cookie: session=<tu-sesion>" \
+  -H "Cookie: session=YOUR_SESSION" \
   -d '{
-    "title": "Migrar base de datos a PostgreSQL",
-    "description": "Migrar datos de SQLite a PostgreSQL",
+    "title": "Database migration to PostgreSQL",
+    "description": "Migrate from SQLite to PostgreSQL",
     "category": "Database",
-    "priority": "alta",
+    "priority": "high",
     "effort_hours": 16.0
   }'
 ```
 
-### Requisitos para Endpoints de IA
+### REST API
 
-- Ollama debe estar instalado y corriendo (ver `SETUP_OLLAMA.md`)
-- Un modelo debe estar descargado (ej: `ollama pull llama3.2`)
-- La API de Ollama debe estar disponible en `http://localhost:11434`
+#### Authentication
+All API endpoints require authentication via Flask session cookies.
 
-## Notas
+#### Task Endpoints
 
-- La base de datos SQLite se crea automáticamente al ejecutar la aplicación por primera vez
-- Si ya tienes una base de datos, ejecuta `python migrate_db.py` para agregar los nuevos campos
-- En producción, cambia la `SECRET_KEY` en `app.py`
-- Considera usar PostgreSQL o MySQL para producción
-- El primer usuario registrado será automáticamente administrador
-- Los endpoints API requieren autenticación mediante sesión de Flask-Login
-- Los endpoints de IA requieren que Ollama esté corriendo (ver `SETUP_OLLAMA.md`)
-- Para más información sobre los endpoints de IA, consulta `ENDPOINTS_IA.md`
+**Create Task**
+```http
+POST /tasks
+Content-Type: application/json
 
-## Licencia
+{
+  "title": "Implement search feature",
+  "description": "Add full-text search to task list",
+  "priority": "medium",
+  "effort_hours": 8.5,
+  "status": "pending",
+  "assigned_to": "John Doe",
+  "category": "Backend"
+}
+```
 
-Este proyecto es de código abierto y está disponible para uso educativo.
+**Get All Tasks**
+```http
+GET /tasks
+```
+
+**Get Specific Task**
+```http
+GET /tasks/1
+```
+
+**Update Task**
+```http
+PUT /tasks/1
+Content-Type: application/json
+
+{
+  "status": "in_progress",
+  "effort_hours": 10.0
+}
+```
+
+**Delete Task**
+```http
+DELETE /tasks/1
+```
+
+## Project Structure
+
+```
+.
+├── app.py                      # Main application entry point
+├── requirements.txt            # Python dependencies
+├── migrate_db.py              # Database migration script
+├── services/
+│   ├── __init__.py
+│   └── ai_service.py          # AI/LLM integration service
+├── templates/                  # Jinja2 HTML templates
+│   ├── base.html              # Base template
+│   ├── login.html             # Login page
+│   ├── register.html          # Registration page
+│   ├── dashboard.html         # Main dashboard
+│   ├── nueva_tarea.html       # Create task form
+│   ├── editar_tarea.html      # Edit task form
+│   ├── usuarios.html          # User management (admin)
+│   └── nuevo_usuario.html     # Create user form (admin)
+├── static/
+│   ├── css/
+│   │   └── style.css          # Custom styles
+│   └── js/
+│       └── main.js            # Client-side JavaScript
+└── tareas.db                  # SQLite database (generated)
+```
+
+## Database Schema
+
+### User Model
+- `id`: Integer, Primary Key
+- `nombre`: String(100), User's full name
+- `email`: String(100), Unique, Email address
+- `password_hash`: String(255), Hashed password
+- `es_admin`: Boolean, Admin flag
+- `fecha_creacion`: DateTime, Account creation timestamp
+
+### Task Model
+- `id`: Integer, Primary Key
+- `title`: String(200), Task title
+- `description`: Text, Detailed description
+- `priority`: String(20), Priority level (low, medium, high, blocking)
+- `effort_hours`: Numeric(10,2), Estimated hours
+- `status`: String(20), Current status
+- `assigned_to`: String(100), Assigned team member
+- `category`: String(50), Task category
+- `risk_analysis`: Text, AI-generated risk analysis
+- `risk_mitigation`: Text, AI-generated mitigation plan
+- `creador_id`: Integer, Foreign Key to User
+- `fecha_creacion`: DateTime, Creation timestamp
+
+## Security Features
+
+- Password hashing using Werkzeug's security utilities
+- Session-based authentication with Flask-Login
+- CSRF protection (built into Flask)
+- Role-based access control for administrative functions
+- Input validation and sanitization
+- SQL injection prevention through SQLAlchemy ORM
+
+## API Permissions
+
+- **Create Task:** Any authenticated user
+- **View Tasks:** Admins see all tasks; users see only assigned tasks
+- **Update/Delete Task:** Admins or task creator only
+- **User Management:** Admins only
+
+## Development Considerations
+
+### Current Implementation
+- SQLite database for development simplicity
+- Local file-based sessions
+- Hardcoded secret key (for development only)
+
+### Production Recommendations
+- Migrate to PostgreSQL or MySQL for production
+- Implement environment-based configuration
+- Use secure secret key from environment variables
+- Add rate limiting for API endpoints
+- Implement API key authentication for external access
+- Add comprehensive logging and monitoring
+- Deploy behind HTTPS with proper SSL certificates
+
+## Future Improvements
+
+- Task dependencies and subtasks
+- File attachments for tasks
+- Comment system for task collaboration
+- Email notifications for task updates
+- Calendar view and deadline tracking
+- Task templates for common workflows
+- Advanced filtering and search capabilities
+- Export functionality (PDF, CSV)
+- Mobile responsive improvements
+- Websocket integration for real-time updates
+- OAuth integration (Google, GitHub)
+- API rate limiting and throttling
+- Comprehensive test suite (unit and integration tests)
+- CI/CD pipeline integration
+- Docker containerization
+- Kubernetes deployment configuration
+
+## Skills Demonstrated
+
+This project showcases the following technical competencies:
+
+- Full-stack web development with Python and Flask
+- RESTful API design and implementation
+- Database design and ORM usage
+- User authentication and authorization
+- Secure password handling
+- Frontend development with HTML, CSS, and JavaScript
+- Integration with third-party APIs and services
+- AI/ML integration for practical applications
+- Clean code architecture and separation of concerns
+- Version control with Git
+- Documentation and technical writing
+
+## License
+
+This project is open source and available for educational purposes.
+
+## Acknowledgments
+
+Built with Flask, SQLAlchemy, and Ollama. Designed as a demonstration of modern web development practices and AI integration capabilities.
